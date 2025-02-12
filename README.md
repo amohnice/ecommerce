@@ -43,3 +43,7 @@ Visit http://127.0.0.1:8000/ in your browser to access the application.
 
 Feel free to fork this repository, create a branch, and submit pull requests. Please make sure to follow the coding conventions and write tests for new features.
 
+## Deployment 
+- **It is a readonly database**
+Live demo[(https://ecommerce-puce-kappa.vercel.app/)]
+
