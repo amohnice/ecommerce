@@ -2,8 +2,8 @@
 
 1. Clone the Repository
 
-       git clone (https://github.com/amohnice/E-Commerce.git)
-       cd E-Commerce
+       git clone (https://github.com/amohnice/ecommerce.git)
+       cd ecommerce
 
 2. Create a Virtual Environment
 
