@@ -1,4 +1,4 @@
-Directory structure:
+## Directory structure:
 └── amohnice-e-commerce/
     ├── db.sqlite3
     ├── manage.py
