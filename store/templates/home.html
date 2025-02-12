@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="text-center py-16">
+    <h1 class="text-4xl font-bold mb-4">Welcome to Our E-commerce Platform</h1>
+    <p class="text-gray-700">Shop the latest products at amazing prices.</p>
+    <a href="{% url 'product_list' %}" class="mt-6 inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">Shop Now</a>
+</div>
+{% endblock %}

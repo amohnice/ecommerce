@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto bg-white p-6 sm:p-8 rounded-lg shadow-lg">
+    <h2 class="text-2xl font-bold mb-6">Manage Wishlists</h2>
+    <div class="mt-6 space-y-6">
+        {% for wishlist in wishlists %}
+        <div class="border-b pb-4 flex flex-col sm:flex-row sm:justify-between items-start sm:items-center">
+            <div class="sm:w-3/5">
+                <h3 class="text-xl font-bold mb-2 sm:mb-0">{{ wishlist.user.username }}</h3>
+                <p class="text-gray-700 mb-2 sm:mb-0">Product: {{ wishlist.product.name }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

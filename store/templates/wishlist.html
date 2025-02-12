@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg">
+    <h2 class="text-2xl font-bold mb-6">Wishlist</h2>
+
+    <!-- Check if wishlist is empty -->
+    {% if wishlist_items %}
+        <!-- Display wishlist items -->
+        {% for item in wishlist_items %}
+        <div class="border-b pb-4 mb-4">
+            <h3 class="text-xl font-bold">{{ item.product.name }}</h3>
+            <p class="text-gray-700">{{ item.product.description }}</p>
+            <p class="text-blue-600 font-bold">KES {{ item.product.price }}</p>
+
+            <!-- Remove from Wishlist Form -->
+            <form method="post" action="{% url 'remove_from_wishlist' item.product.id %}" class="mt-4">
+                {% csrf_token %}
+                <button type="submit" class="mt-4 inline-block bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
+                    Remove from Wishlist
+                </button>
+            </form>
+
+            <!-- View Details Link -->
+            <a href="{% url 'product_detail' item.product.id %}" class="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">View Details</a>
+        </div>
+        {% endfor %}
+    {% else %}
+        <!-- Display empty wishlist message -->
+        <div class="text-center py-8">
+            <p class="text-gray-700 text-lg">Your wishlist is empty.</p>
+            <a href="{% url 'product_list' %}" class="mt-4 inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">Browse Products</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

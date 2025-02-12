@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg">
+    <h2 class="text-2xl font-bold mb-6 text-[#023852]">Admin Dashboard</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <!-- Products Section -->
+        <div class="bg-[#9FD8C5] p-6 rounded-lg shadow-lg hover:shadow-xl transition duration-300 ease-in-out">
+            <h3 class="text-xl font-bold mb-4 text-[#023852]">Products</h3>
+            <a href="{% url 'manage_products' %}" class="text-[#079FA0] hover:text-[#FAC005] hover:underline focus:outline-none focus:ring-2 focus:ring-[#079FA0]">Manage Products</a>
+        </div>
+
+        <!-- Orders Section -->
+        <div class="bg-[#9FD8C5] p-6 rounded-lg shadow-lg hover:shadow-xl transition duration-300 ease-in-out">
+            <h3 class="text-xl font-bold mb-4 text-[#023852]">Orders</h3>
+            <a href="{% url 'manage_orders' %}" class="text-[#079FA0] hover:text-[#FAC005] hover:underline focus:outline-none focus:ring-2 focus:ring-[#079FA0]">Manage Orders</a>
+        </div>
+
+        <!-- Coupons Section -->
+        <div class="bg-[#9FD8C5] p-6 rounded-lg shadow-lg hover:shadow-xl transition duration-300 ease-in-out">
+            <h3 class="text-xl font-bold mb-4 text-[#023852]">Coupons</h3>
+            <a href="{% url 'manage_coupons' %}" class="text-[#079FA0] hover:text-[#FAC005] hover:underline focus:outline-none focus:ring-2 focus:ring-[#079FA0]">Manage Coupons</a>
+        </div>
+
+        <!-- Reviews Section -->
+        <div class="bg-[#9FD8C5] p-6 rounded-lg shadow-lg hover:shadow-xl transition duration-300 ease-in-out">
+            <h3 class="text-xl font-bold mb-4 text-[#023852]">Reviews</h3>
+            <a href="{% url 'manage_reviews' %}" class="text-[#079FA0] hover:text-[#FAC005] hover:underline focus:outline-none focus:ring-2 focus:ring-[#079FA0]">Manage Reviews</a>
+        </div>
+
+        <!-- Wishlists Section -->
+        <div class="bg-[#9FD8C5] p-6 rounded-lg shadow-lg hover:shadow-xl transition duration-300 ease-in-out">
+            <h3 class="text-xl font-bold mb-4 text-[#023852]">Wishlists</h3>
+            <a href="{% url 'manage_wishlists' %}" class="text-[#079FA0] hover:text-[#FAC005] hover:underline focus:outline-none focus:ring-2 focus:ring-[#079FA0]">Manage Wishlists</a>
+        </div>
+
+        <!-- Profiles Section -->
+        <div class="bg-[#9FD8C5] p-6 rounded-lg shadow-lg hover:shadow-xl transition duration-300 ease-in-out">
+            <h3 class="text-xl font-bold mb-4 text-[#023852]">Profiles</h3>
+            <a href="{% url 'manage_profiles' %}" class="text-[#079FA0] hover:text-[#FAC005] hover:underline focus:outline-none focus:ring-2 focus:ring-[#079FA0]">Manage Profiles</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

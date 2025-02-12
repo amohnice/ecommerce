@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-lg">
+    <h2 class="text-2xl font-bold mb-6 text-[#023852]">Add Review</h2>
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-4">
+            <label class="block text-[#079FA0] font-medium">Rating</label>
+            <select name="rating" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#079FA0] focus:border-[#079FA0]">
+                <option value="1">1 Star</option>
+                <option value="2">2 Stars</option>
+                <option value="3">3 Stars</option>
+                <option value="4">4 Stars</option>
+                <option value="5">5 Stars</option>
+            </select>
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-[#079FA0] font-medium">Comment</label>
+            <textarea name="comment" rows="4" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#079FA0] focus:border-[#079FA0]"></textarea>
+        </div>
+
+        <button type="submit" class="w-full bg-[#F58B01] text-white px-4 py-2 rounded-lg hover:bg-[#FAC005] transition duration-300 ease-in-out">
+            Submit Review
+        </button>
+    </form>
+</div>
+{% endblock %}
