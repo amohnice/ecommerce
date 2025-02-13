@@ -1,8 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
+
 {% block content %}
 <!-- Home page section with background image -->
-<div class="relative bg-cover bg-center min-h-screen flex items-center justify-center text-center text-white" style="background-image: url('{% static 'images/background.png' %}'); background-position: center; background-size: cover;">
+<div class="relative bg-cover bg-center h-screen flex items-center justify-center text-center text-white" style="background-image: url('{% static 'images/background.png' %}'); background-position: center; background-size: cover;">
     <div class="absolute inset-0 bg-black opacity-50"></div> <!-- Add dark overlay for text visibility -->
     <div class="relative z-10 px-6 py-16 max-w-3xl mx-auto">
         <h1 class="text-5xl font-bold mb-6">Welcome to Our E-commerce Platform</h1>
