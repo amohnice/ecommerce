@@ -74,6 +74,11 @@ urlpatterns = [
     # Wishlist Management
     path('admin-dashboard/wishlists/', views.manage_wishlists, name='manage_wishlists'),
 
+    path('admin-dashboard/categories/', views.manage_categories, name='manage_categories'),
+    path('admin-dashboard/add/category/', views.add_category, name='add_category'),
+    path('admin-dashboard/edit/category/<int:id>/', views.edit_category, name='edit_category'),
+    path('admin-dashboard/delete/category/<int:id>/', views.delete_category, name='delete_category'),
+
     # Profile Management
     path('admin-dashboard/profiles/', views.manage_profiles, name='manage_profiles'),
 ]

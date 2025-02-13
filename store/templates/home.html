@@ -1,9 +1,35 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block content %}
-<div class="text-center py-16">
-    <h1 class="text-4xl font-bold mb-4">Welcome to Our E-commerce Platform</h1>
-    <p class="text-gray-700">Shop the latest products at amazing prices.</p>
-    <a href="{% url 'product_list' %}" class="mt-6 inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">Shop Now</a>
+<!-- Home page section with background image -->
+<div class="relative bg-cover bg-center min-h-screen flex items-center justify-center text-center text-white" style="background-image: url('{% static 'images/background.png' %}'); background-position: center; background-size: cover;">
+    <div class="absolute inset-0 bg-black opacity-50"></div> <!-- Add dark overlay for text visibility -->
+    <div class="relative z-10 px-6 py-16 max-w-3xl mx-auto">
+        <h1 class="text-5xl font-bold mb-6">Welcome to Our E-commerce Platform</h1>
+        <p class="text-lg text-gray-300 mb-6">Discover the latest trends and shop your favorite products at unbeatable prices. Your satisfaction is our priority.</p>
+        <a href="{% url 'product_list' %}" class="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg text-xl hover:bg-blue-700 transition duration-300 ease-in-out transform hover:scale-105">Shop Now</a>
+    </div>
 </div>
+
+<!-- Additional section to highlight product categories or promotions -->
+<section class="bg-gray-100 py-16">
+    <div class="text-center">
+        <h2 class="text-3xl font-semibold mb-6">Browse Our Top Categories</h2>
+        {% if categories %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for category in categories %}
+            <div class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition duration-300 ease-in-out transform hover:scale-105">
+                <img src="{% if category.image %}{{ category.image.url }}{% else %}{% static 'images/electronics.png' %}{% endif %}" alt="{{ category.name }}" class="w-full h-40 object-cover rounded-t-lg mb-4">
+                <h3 class="text-2xl font-semibold">{{ category.name }}</h3>
+                <p class="text-gray-600 mt-2">{{ category.description }}</p>
+                <a href="{% url 'product_list' %}?category={{ category.slug }}" class="mt-4 inline-block text-blue-600 hover:text-blue-700">Shop Now</a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-600">No categories available at the moment. Please check back later.</p>
+        {% endif %}
+    </div>
+</section>
+
 {% endblock %}

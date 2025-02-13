@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django import forms
-
+from .models import Product, Category
 
 class CustomUserCreationForm(forms.ModelForm):
     password1 = forms.CharField(widget=forms.PasswordInput)
@@ -16,3 +16,15 @@ class CustomUserCreationForm(forms.ModelForm):
         if password1 != password2:
             raise forms.ValidationError("The passwords do not match.")
         return password2
+
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = ['name', 'description', 'price', 'image', 'category', 'stock']
+
+    category = forms.ModelChoiceField(queryset=Category.objects.all())  # Dropdown for categories
+
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = ['name', 'description', 'image']

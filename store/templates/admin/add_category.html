@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg">
+    <h2 class="text-2xl font-bold mb-6 text-[#023852]">Add New Category</h2>
+    
+    <!-- Category Form -->
+    <form action="{% url 'add_category' %}" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="mb-4">
+            <label for="name" class="block text-lg font-semibold text-[#023852]">Category Name</label>
+            <input type="text" name="name" id="name" class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter category name" required>
+        </div>
+
+        <div class="mb-4">
+            <label for="description" class="block text-lg font-semibold text-[#023852]">Description</label>
+            <textarea name="description" id="description" class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter category description" required></textarea>
+        </div>
+
+        <div class="mb-4">
+            <label for="image" class="block text-lg font-semibold text-[#023852]">Category Image</label>
+            <input type="file" name="image" id="image" class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+        </div>
+        
+        <div class="flex justify-between items-center">
+            <a href="{% url 'manage_categories' %}" class="text-sm text-[#079FA0] hover:text-[#FAC005]">Back to Categories</a>
+            <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">Add Category</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

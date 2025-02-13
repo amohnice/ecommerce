@@ -7,7 +7,8 @@ from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Q, Sum
 from django.core.mail import send_mail
-from .models import Product, Cart, CartItem, Order, Wishlist, Review, Coupon, Profile, OrderItem
+from .models import Product, Category, Cart, CartItem, Order, Wishlist, Review, Coupon, Profile, OrderItem
+from .forms import CategoryForm
 import requests, datetime
 from django.conf import settings
 from django.http import JsonResponse
@@ -16,7 +17,11 @@ logger = logging.getLogger(__name__)
 
 # Home
 def home(request):
-    return render(request, 'home.html')
+    context = {
+        'site_name': settings.SITE_NAME,
+        'categories': Category.objects.all(),  # Fetch all categories from the database
+    }
+    return render(request, 'home.html', context)
 
 # Authentication
 def user_login(request):
@@ -48,15 +53,22 @@ def register(request):
 
 # Products
 def product_list(request):
-    query = request.GET.get('q')
-    category = request.GET.get('category')
+    query = request.GET.get('q')  # Get the search query from the URL
+    category_slug = request.GET.get('category')  # Get the category slug from the URL query parameter
+
+    # Start with all products
     products = Product.objects.all()
 
+    # Filter by search query if provided
     if query:
         products = products.filter(Q(name__icontains=query) | Q(description__icontains=query))
-    if category:
+
+    # Filter by category if provided
+    if category_slug:
+        category = get_object_or_404(Category, slug=category_slug)  # Get the category by slug
         products = products.filter(category=category)
 
+    # Return the filtered products to the template
     return render(request, 'product_list.html', {'products': products})
 
 def product_detail(request, id):
@@ -341,13 +353,13 @@ def add_review(request, product_id):
 # Profile
 @login_required
 def profile(request):
-    profile, created = Profile.objects.get_or_create(user=request.user)
+    userprofile, created = Profile.objects.get_or_create(user=request.user)
     if request.method == 'POST':
         profile.phone = request.POST['phone']
         profile.address = request.POST['address']
         profile.save()
         return redirect('profile')
-    return render(request, 'profile.html', {'profile': profile})
+    return render(request, 'profile.html', {'profile': userprofile})
 
 # Coupons
 @login_required
@@ -410,24 +422,28 @@ def manage_products(request):
 @login_required
 @user_passes_test(is_admin)
 def add_product(request):
+    categories = Category.objects.all()  # Fetch all categories
     if request.method == 'POST':
         # Retrieve form data
         name = request.POST.get('name')
         description = request.POST.get('description')
         price = request.POST.get('price')
-        category = request.POST.get('category')
+        category_name = request.POST.get('category')  # Assuming category name is sent as plain text
         image = request.FILES.get('image')
         stock = request.POST.get('stock')  # Ensure stock is part of the form
 
         # Validate that required fields are filled
-        if not name or not description or not price or not category or not stock or not image:
+        if not name or not description or not price or not category_name or not stock or not image:
             messages.error(request, 'All fields are required!')
-            return redirect('add_product')  # Stay on the add product page if validation fails
+            return redirect('add_product')
 
         try:
             # Ensure the price and stock are valid
             price = float(price)
             stock = int(stock)
+
+            # Get or create the category
+            category = Category.objects.get(name=category_name)
 
             # Create product
             Product.objects.create(
@@ -436,35 +452,42 @@ def add_product(request):
                 price=price,
                 category=category,
                 image=image,
-                stock=stock  # Don't forget to save stock as well
+                stock=stock
             )
             messages.success(request, 'Product added successfully!')
-            return redirect('manage_products')  # Redirect to the manage products page after successful creation
+            return redirect('manage_products')
 
         except ValueError:
             messages.error(request, 'Invalid price or stock value.')
-            return redirect('add_product')  # Stay on the page if there's an error with the values
+            return redirect('add_product')
 
-    return render(request, 'admin/add_product.html')
+        except Category.DoesNotExist:
+            messages.error(request, f"Category '{category_name}' does not exist.")
+            return redirect('add_product')
+    return render(request, 'admin/add_product.html', {'categories': categories})
 
 @login_required
 @user_passes_test(is_admin)
 def edit_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
+    categories = Category.objects.all()  # Fetch all categories
     if request.method == 'POST':
-        logger.info(f"Updating product: {product.name}")
-        logger.info(f"Form data: {request.POST}")
         product.name = request.POST.get('name')
         product.description = request.POST.get('description')
         product.price = request.POST.get('price')
-        product.category = request.POST.get('category')
-        product.stock = int(request.POST.get('stock', 0))  # Ensure stock is updated
+        product.category = Category.objects.get(name=request.POST.get('category'))  # Ensure category is set properly
+        product.stock = int(request.POST.get('stock', 0))
+
+        # If an image is uploaded, save it to the product
         if 'image' in request.FILES:
             product.image = request.FILES['image']
+
+        # Save the product
         product.save()
         messages.success(request, f'{product.name} updated successfully.')
         return redirect('manage_products')
-    return render(request, 'admin/edit_product.html', {'product': product})
+
+    return render(request, 'admin/edit_product.html', {'product': product, 'categories': categories})
 
 @login_required
 @user_passes_test(is_admin)
@@ -472,6 +495,44 @@ def delete_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     product.delete()
     return redirect('manage_products')
+
+@login_required
+@user_passes_test(is_admin)
+def manage_categories(request):
+    categories = Category.objects.all()
+    return render(request, 'admin/manage_categories.html', {'categories': categories})
+
+@login_required
+@user_passes_test(is_admin)
+def add_category(request):
+    if request.method == 'POST':
+        form = CategoryForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('manage_categories')
+    else:
+        form = CategoryForm()
+    return render(request, 'admin/add_category.html', {'form': form})
+
+@login_required
+@user_passes_test(is_admin)
+def edit_category(request, id):
+    category = get_object_or_404(Category, id=id)
+    if request.method == 'POST':
+        form = CategoryForm(request.POST, request.FILES, instance=category)
+        if form.is_valid():
+            form.save()
+            return redirect('manage_categories')
+    else:
+        form = CategoryForm(instance=category)
+    return render(request, 'admin/edit_category.html', {'form': form, 'category': category})
+
+@login_required
+@user_passes_test(is_admin)
+def delete_category(request, id):
+    category = get_object_or_404(Category, id=id)
+    category.delete()
+    return redirect('manage_categories')
 
 # Order Management
 @login_required
