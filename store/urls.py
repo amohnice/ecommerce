@@ -37,8 +37,8 @@ urlpatterns = [
     path('remove_from_wishlist/<int:product_id>/', views.remove_from_wishlist, name='remove_from_wishlist'),
 
     # Reviews
-    path('review/<int:product_id>/', views.add_review, name='add_review'),
-
+    # path('review/<int:product_id>/', views.add_review, name='add_review'),
+    path('products/<int:product_id>/add_review/', views.add_review, name='add_review'),
     # Profile
     path('profile/', views.profile, name='profile'),
 

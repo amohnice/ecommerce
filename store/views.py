@@ -8,7 +8,7 @@ from django.utils import timezone
 from django.db.models import Q, Sum
 from django.core.mail import send_mail
 from .models import Product, Category, Cart, CartItem, Order, Wishlist, Review, Coupon, Profile, OrderItem
-from .forms import CategoryForm
+from .forms import CategoryForm, ReviewForm
 import requests, datetime
 from django.conf import settings
 from django.http import JsonResponse
@@ -173,14 +173,18 @@ def remove_from_cart(request, product_id):
             messages.success(request, 'Item removed from cart.')
         return redirect('cart')
 
+
 @login_required
 def checkout(request):
     # Retrieve the cart items for the current user
-    cart_items = Cart.objects.filter(user=request.user)
+    cart = Cart.objects.filter(user=request.user).first()
 
-    if not cart_items.exists():
-        # If no items in the cart, redirect to the homepage or a relevant page
+    if not cart:
+        # If no cart exists, redirect to the homepage or a relevant page
         return redirect('home')  # Change 'home' to the name of your homepage view
+
+    # Retrieve the items in the cart
+    cart_items = cart.items.all()
 
     # Calculate the total price
     total_price = sum(item.product.price * item.quantity for item in cart_items)
@@ -194,7 +198,8 @@ def checkout(request):
         coupon = None
         if coupon_code:
             try:
-                coupon = Coupon.objects.get(code=coupon_code, active=True, valid_from__lte=timezone.now(), valid_to__gte=timezone.now())
+                coupon = Coupon.objects.get(code=coupon_code, active=True, valid_from__lte=timezone.now(),
+                                            valid_to__gte=timezone.now())
             except Coupon.DoesNotExist:
                 messages.error(request, 'Invalid or expired coupon code.')
 
@@ -299,6 +304,22 @@ def mpesa_callback(request):
 
         return JsonResponse({"Message": "Success"})
     return JsonResponse({"Message": "Failure"}, status=400)
+
+@login_required
+def add_review(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    if request.method == 'POST':
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.product = product
+            review.user = request.user
+            review.save()
+            messages.success(request, 'Your review has been submitted successfully.')
+            return redirect('product_detail', product_id=product.id)
+    else:
+        form = ReviewForm()
+    return render(request, 'add_review.html', {'form': form, 'product': product})
 
 # Orders
 @login_required

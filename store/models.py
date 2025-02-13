@@ -97,7 +97,7 @@ class Wishlist(models.Model):
         return f"{self.user.username}'s wishlist"
 
 class Review(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     rating = models.PositiveIntegerField()
     comment = models.TextField()

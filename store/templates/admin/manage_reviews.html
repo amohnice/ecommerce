@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 
+{% load custom_filters %}
+
 {% block content %}
 <div class="max-w-4xl mx-auto bg-white p-6 sm:p-8 rounded-lg shadow-lg">
     <h2 class="text-2xl font-bold mb-6">Manage Reviews</h2>
@@ -9,7 +11,16 @@
             <div class="sm:w-3/5">
                 <h3 class="text-xl font-bold mb-2 sm:mb-0">{{ review.product.name }}</h3>
                 <p class="text-gray-700 mb-2 sm:mb-0">User: {{ review.user.username }}</p>
-                <p class="text-gray-700 mb-2 sm:mb-0">Rating: {{ review.rating }}</p>
+                <div class="flex items-center mb-2 sm:mb-0">
+                    <span class="text-gray-700 mr-2">Rating:</span>
+                    {% for i in review.rating|times %}
+                        {% if i <= review.rating %}
+                        <i class="fas fa-star text-yellow-500"></i>
+                        {% else %}
+                        <i class="far fa-star text-yellow-500"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
                 <p class="text-gray-700 mb-2 sm:mb-0">Comment: {{ review.comment }}</p>
             </div>
             <div class="flex space-x-4 mt-4 sm:mt-0">
