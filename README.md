@@ -52,6 +52,6 @@ Feel free to fork this repository, create a branch, and submit pull requests. Pl
 ## Deployment 
 - **It is a readonly database**
 
-- Live demo[Vercel](https://ecommerce-puce-kappa.vercel.app/)
-- Pitch deck presentation[Canva](https://www.canva.com/design/DAGe_gxykTQ/hGXemfEzN4W-2LC76dQQHA/view?utm_content=DAGe_gxykTQ&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=hcce5ae2d14)
+- Live demo [Vercel](https://ecommerce-puce-kappa.vercel.app/)
+- Pitch deck presentation [Canva](https://www.canva.com/design/DAGe_gxykTQ/hGXemfEzN4W-2LC76dQQHA/view?utm_content=DAGe_gxykTQ&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=hcce5ae2d14)
 

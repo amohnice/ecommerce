@@ -153,6 +153,9 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 
+# Contact email to receive messages
+CONTACT_EMAIL = config('CONTACT_EMAIL')
+
 load_dotenv()
 
 # Set the SITE_NAME variable

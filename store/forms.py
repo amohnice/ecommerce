@@ -21,7 +21,6 @@ class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
         fields = ['name', 'description', 'price', 'image', 'category', 'stock']
-
     category = forms.ModelChoiceField(queryset=Category.objects.all())  # Dropdown for categories
 
 class CategoryForm(forms.ModelForm):
@@ -33,3 +32,8 @@ class ReviewForm(forms.ModelForm):
     class Meta:
         model = Review
         fields = ['rating', 'comment']
+
+class ContactForm(forms.Form):
+    name = forms.CharField(max_length=100)
+    email = forms.EmailField()
+    message = forms.CharField(widget=forms.Textarea)

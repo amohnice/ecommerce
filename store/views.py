@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
@@ -8,10 +10,10 @@ from django.utils import timezone
 from django.db.models import Q, Sum
 from django.core.mail import send_mail
 from .models import Product, Category, Cart, CartItem, Order, Wishlist, Review, Coupon, Profile, OrderItem
-from .forms import CategoryForm, ReviewForm
+from .forms import CategoryForm, ReviewForm, ContactForm
 import requests, datetime
 from django.conf import settings
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 import logging
 logger = logging.getLogger(__name__)
 
@@ -113,15 +115,16 @@ def add_to_cart(request, product_id):
         # Redirect to the cart page
         return redirect('cart')
 
-
 @login_required
 def view_cart(request):
     # Ensure the user's cart exists
     cart = Cart.objects.filter(user=request.user).first()
 
     if not cart:
+        # If the cart doesn't exist, create a new empty cart (optional)
+        cart = Cart.objects.create(user=request.user)
+        # You could also just return an empty cart message or handle this differently
         messages.error(request, "Your cart is empty.")
-        return redirect('product_list')  # Redirect to products list if no cart is found
 
     cart_items = CartItem.objects.filter(cart=cart)  # Get the related CartItems for the user's cart
     total = sum(item.product.price * item.quantity for item in cart_items)  # Compute total for all items in the cart
@@ -235,11 +238,13 @@ def checkout(request):
         'total_price': total_price,
     })
 
+
 @login_required
 def initiate_payment(request):
     if request.method == 'POST':
         phone = request.POST.get('phone')
         amount = request.POST.get('amount')
+        order_id = request.POST.get('order_id')  # Assuming an order ID is passed from the frontend
 
         # Generate a dynamic timestamp in the required format (yyyyMMddHHmmss)
         timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -258,9 +263,10 @@ def initiate_payment(request):
             'PartyA': phone,
             'PartyB': settings.MPESA_SHORTCODE,
             'PhoneNumber': phone,
-            'CallBackURL': 'https://yourdomain.com/callback',  # Make sure this is a valid URL
-            'AccountReference': 'E-commerce',
-            'TransactionDesc': 'Payment for order',
+            # 'CallBackURL': f'{settings.SITE_URL}/mpesa/callback/',  # Callback URL configured from settings
+            "CallBackURL": "https://sandbox.safaricom.co.ke/mpesa/",
+            'AccountReference': f'Order-{order_id}',
+            'TransactionDesc': f'Payment for Order #{order_id}',
         }
 
         try:
@@ -272,11 +278,23 @@ def initiate_payment(request):
             )
 
             if response.status_code == 200:
-                # Handle successful response (return success page or redirect)
-                return redirect('payment_success')
+                # Process the response to get the payment request ID
+                response_data = response.json()
+                payment_request_id = response_data.get('CheckoutRequestID')
+                if payment_request_id:
+                    # Save payment request ID to the order or session for tracking
+                    order = Order.objects.get(id=order_id)
+                    order.payment_request_id = payment_request_id  # Assuming you have this field in the Order model
+                    order.save()
+
+                    return redirect('payment_success')  # Redirect to a success page
+                else:
+                    # Log and handle the error if payment request ID is missing
+                    return redirect('payment_failed')
             else:
-                # Log error or return failed payment page
+                # Handle error responses from M-Pesa
                 return redirect('payment_failed')
+
         except requests.exceptions.RequestException as e:
             # Log the error and return a failure page
             print(f"Error occurred: {e}")
@@ -284,25 +302,50 @@ def initiate_payment(request):
 
     return render(request, 'payment.html')
 
+
 def payment_success(request):
     return render(request, 'payment_success.html')
+
 
 def payment_failed(request):
     return render(request, 'payment_failed.html')
 
-
 def mpesa_callback(request):
     if request.method == 'POST':
-        # M-Pesa sends a POST request with the payment details
-        mpesa_response = request.body.decode('utf-8')  # You may need to parse this JSON properly
+        mpesa_response = request.body.decode('utf-8')  # Decode the response body
 
-        # Optionally, log the response for debugging
-        print(mpesa_response)
+        # Optionally log the response for debugging
+        print(f"MPesa Response: {mpesa_response}")
 
-        # Here, you can handle the response data, such as updating the order status, etc.
-        # You will want to check for success or failure and take appropriate action
+        # Parse the response if necessary (assuming it's in JSON format)
+        response_data = json.loads(mpesa_response)
 
-        return JsonResponse({"Message": "Success"})
+        # Extract the relevant data from the response
+        checkout_request_id = response_data.get('CheckoutRequestID')
+        result_code = response_data.get('ResultCode')
+        result_desc = response_data.get('ResultDesc')
+
+        # Find the corresponding order based on CheckoutRequestID
+        try:
+            order = Order.objects.get(payment_request_id=checkout_request_id)
+        except Order.DoesNotExist:
+            return JsonResponse({"Message": "Order not found"}, status=404)
+
+        if result_code == 0:  # M-Pesa success code
+            # Mark the order as paid and update the order status
+            order.status = 'Paid'
+            order.payment_result = result_desc  # Store the result description (optional)
+            order.save()
+
+            return JsonResponse({"Message": "Payment Successful"})
+        else:
+            # Handle failure scenario
+            order.status = 'Payment Failed'
+            order.payment_result = result_desc  # Store the result description for debugging
+            order.save()
+
+            return JsonResponse({"Message": "Payment Failed"}, status=400)
+
     return JsonResponse({"Message": "Failure"}, status=400)
 
 @login_required
@@ -374,12 +417,17 @@ def add_review(request, product_id):
 # Profile
 @login_required
 def profile(request):
+    # Use the same variable name for the profile
     userprofile, created = Profile.objects.get_or_create(user=request.user)
+
     if request.method == 'POST':
-        profile.phone = request.POST['phone']
-        profile.address = request.POST['address']
-        profile.save()
-        return redirect('profile')
+        # Update the fields of the userprofile object
+        userprofile.phone = request.POST['phone']
+        userprofile.address = request.POST['address']
+        userprofile.save()  # Save the updated profile
+
+        return redirect('profile')  # Redirect to the profile page after saving changes
+
     return render(request, 'profile.html', {'profile': userprofile})
 
 # Coupons
@@ -414,14 +462,29 @@ def order_history(request):
 
 def contact_us(request):
     if request.method == 'POST':
-        # Handle form submission (e.g., send an email)
-        name = request.POST['name']
-        email = request.POST['email']
-        message = request.POST['message']
-        # Add logic to send an email or save the message to the database
-        return redirect('contact_us')
-    return render(request, 'contact_us.html')
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            email = form.cleaned_data['email']
+            message = form.cleaned_data['message']
 
+            # Sending the email
+            subject = f"Message from {name}"
+            message_body = f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}"
+            from_email = email
+            recipient_list = [settings.CONTACT_EMAIL]
+
+            try:
+                send_mail(subject, message_body, from_email, recipient_list)
+                return HttpResponse("Thank you for your message. We will get back to you soon.")
+            except Exception as e:
+                return HttpResponse(f"Error sending message: {e}")
+        else:
+            return HttpResponse("Invalid form submission.")
+    else:
+        form = ContactForm()
+
+    return render(request, 'contact_us.html', {'form': form})
 
 # Check if the user is an admin
 def is_admin(user):
